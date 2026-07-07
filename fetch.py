@@ -26,6 +26,10 @@ def fetch(code):
         text = resp.read().decode("utf-8")
 
     lines = text.strip().split("\n")
+    header = lines[0].split(",")
+    is_index = header[1] == "0"  # 0=指数(日経平均/TOPIX/グロース250), 1=個別株
+    divisor = 100 if is_index else 10
+
     bars = []
     trade_date = None
     for line in lines[1:]:
@@ -34,10 +38,10 @@ def fetch(code):
             continue
         tstr = parts[0]  # "07.07/15:30"
         try:
-            o = float(parts[1]) / 100
-            h = float(parts[2]) / 100
-            l = float(parts[3]) / 100
-            c = float(parts[4]) / 100
+            o = float(parts[1]) / divisor
+            h = float(parts[2]) / divisor
+            l = float(parts[3]) / divisor
+            c = float(parts[4]) / divisor
             v = int(parts[5])
         except ValueError:
             continue
