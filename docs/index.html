@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分足チャート記録 | 日経平均・TOPIX・グロース250 ほか</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>分足チャート記録</h1>
+  <p>日経平均・TOPIX・グロース250・キオクシア・太陽誘電・SUMCO の1分足を毎営業日大引け後に記録</p>
+</header>
+
+<div class="mode-switch" id="mode-switch">
+  <button data-mode="symbol" class="active">銘柄別</button>
+  <button data-mode="date">日付別(一覧)</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<main id="main"></main>
+
+<script src="app.js"></script>
+</body>
+</html>
