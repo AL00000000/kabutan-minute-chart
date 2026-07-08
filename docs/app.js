@@ -185,34 +185,27 @@ async function renderMain() {
 
   if (state.mode === "symbol") {
     const code = state.symbolCode;
-    // date sub-tabs for this symbol
-    const dateBar = document.createElement("div");
-    dateBar.className = "tabs";
-    dateBar.style.margin = "0 0 14px";
-    for (const d of state.manifest.dates) {
-      const btn = document.createElement("button");
-      btn.textContent = d;
-      btn.className = d === state.date ? "active" : "";
-      btn.addEventListener("click", () => {
-        state.date = d;
-        renderMain();
-      });
-      dateBar.appendChild(btn);
-    }
-    els.main.appendChild(dateBar);
+    const recentDates = state.manifest.dates.slice(0, 5);
+    const list = document.createElement("div");
+    list.style.display = "flex";
+    list.style.flexDirection = "column";
+    list.style.gap = "14px";
 
-    const bars = await loadBars(code, state.date);
-    const card = document.createElement("div");
-    card.className = "chart-card";
-    if (!bars || !bars.length) {
-      card.innerHTML = `<div class="empty">${state.date} のデータがありません。</div>`;
-    } else {
-      card.innerHTML =
-        `<h2>${symbolName(code)}</h2>` +
-        `<div class="chart-stats">${statsLine(bars)}</div>` +
-        renderChart(bars, { width: 900, height: 380, showVolume: true });
+    for (const d of recentDates) {
+      const bars = await loadBars(code, d);
+      const card = document.createElement("div");
+      card.className = "chart-card";
+      if (!bars || !bars.length) {
+        card.innerHTML = `<h2>${symbolName(code)}　${d}</h2><div class="empty">データがありません。</div>`;
+      } else {
+        card.innerHTML =
+          `<h2>${symbolName(code)}　${d}</h2>` +
+          `<div class="chart-stats">${statsLine(bars)}</div>` +
+          renderChart(bars, { width: 900, height: 300, showVolume: true });
+      }
+      list.appendChild(card);
     }
-    els.main.appendChild(card);
+    els.main.appendChild(list);
   } else {
     const date = state.date;
     const grid = document.createElement("div");
