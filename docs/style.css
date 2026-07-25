@@ -91,6 +91,15 @@ header p {
   font-weight: 600;
 }
 
+/* スケジュールタスクが失敗してデータが無い営業日 */
+.tabs button.failed {
+  background: #7f1d24;
+  border-color: #a83540;
+  color: #ffe1e4;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
 main {
   padding: 20px 24px 60px;
 }

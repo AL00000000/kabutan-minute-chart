@@ -161,15 +161,29 @@ function renderTabs() {
       els.tabs.appendChild(btn);
     }
   } else {
-    for (const d of state.manifest.dates) {
+    // 取得できている日と、取得に失敗した営業日をまとめて新しい順に並べる
+    const got = new Set(state.manifest.dates);
+    const shown = state.manifest.dates
+      .concat(state.missingDates || [])
+      .sort()
+      .reverse();
+
+    for (const d of shown) {
       const btn = document.createElement("button");
-      btn.textContent = d;
-      btn.className = d === state.date ? "active" : "";
-      btn.addEventListener("click", () => {
-        state.date = d;
-        renderTabs();
-        renderMain();
-      });
+      if (got.has(d)) {
+        btn.textContent = d;
+        btn.className = d === state.date ? "active" : "";
+        btn.addEventListener("click", () => {
+          state.date = d;
+          renderTabs();
+          renderMain();
+        });
+      } else {
+        btn.textContent = `${d}  取得失敗`;
+        btn.className = "failed";
+        btn.disabled = true;
+        btn.title = "この営業日はスケジュールタスクが失敗し、データがありません";
+      }
       els.tabs.appendChild(btn);
     }
   }
@@ -228,10 +242,41 @@ async function renderMain() {
   }
 }
 
+// 土日・祝日を除いた売買日のうち、データが無い日 = スケジュールタスクの取得失敗。
+// 祝日リストを読めなかったときは、祝日を誤って失敗扱いしないよう空で返す。
+async function loadMissingDates(dates) {
+  if (dates.length < 2) return [];
+  try {
+    const res = await fetch("/kabutan-ranking/holidays.json", { cache: "no-cache" });
+    if (!res.ok) return [];
+    const holidays = new Set((await res.json()).dates || []);
+    if (!holidays.size) return [];
+
+    const have = new Set(dates);
+    const sorted = dates.slice().sort();
+    const at = (s) => { const p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2], 12); };
+    const ymd = (d) => d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+
+    const out = [];
+    for (let t = at(sorted[0]).getTime(); t <= at(sorted.at(-1)).getTime(); t += 86400000) {
+      const s = ymd(new Date(t));
+      const w = at(s).getDay();
+      if (w === 0 || w === 6 || holidays.has(s) || have.has(s)) continue;
+      out.push(s);
+    }
+    return out;
+  } catch (e) {
+    return [];
+  }
+}
+
 async function init() {
   state.manifest = await loadManifest();
   state.symbolCode = state.manifest.symbols[0]?.code ?? null;
   state.date = state.manifest.dates[0] ?? null;
+  state.missingDates = await loadMissingDates(state.manifest.dates);
 
   els.modeSwitch.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => setMode(btn.dataset.mode));
