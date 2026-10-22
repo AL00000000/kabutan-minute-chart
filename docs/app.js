@@ -247,7 +247,7 @@ async function renderMain() {
 async function loadMissingDates(dates) {
   if (dates.length < 2) return [];
   try {
-    const res = await fetch("/kabutan-ranking/holidays.json", { cache: "no-cache" });
+    const res = await fetch("/kabulog/holidays.json", { cache: "no-cache" });
     if (!res.ok) return [];
     const holidays = new Set((await res.json()).dates || []);
     if (!holidays.size) return [];
